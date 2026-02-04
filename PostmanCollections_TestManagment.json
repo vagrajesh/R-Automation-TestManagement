@@ -1,0 +1,738 @@
+{
+  "info": {
+    "name": "R-Automation Test Management API Collection",
+    "description": "Complete API collection for Test Management System with DeepEval integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Backend Services",
+      "item": [
+        {
+          "name": "Health & Status",
+          "item": [
+            {
+              "name": "Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3000/api/health",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "health"]
+                },
+                "description": "Check backend health and connection status"
+              }
+            },
+            {
+              "name": "Config",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3000/api/config",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "config"]
+                },
+                "description": "Get backend configuration"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Jira Integration",
+          "item": [
+            {
+              "name": "Connect to Jira",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"baseUrl\": \"https://your-jira-instance.atlassian.net\",\n  \"email\": \"your-email@example.com\",\n  \"apiToken\": \"your-jira-api-token\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/jira/connect",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "jira", "connect"]
+                },
+                "description": "Connect to Jira instance"
+              }
+            },
+            {
+              "name": "Get Jira Stories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3000/api/jira/stories",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "jira", "stories"]
+                },
+                "description": "Retrieve user stories from Jira"
+              }
+            }
+          ]
+        },
+        {
+          "name": "ServiceNow Integration",
+          "item": [
+            {
+              "name": "Connect to ServiceNow",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"instanceUrl\": \"https://your-instance.service-now.com\",\n  \"username\": \"your-username\",\n  \"password\": \"your-password\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/servicenow/connect",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "servicenow", "connect"]
+                },
+                "description": "Connect to ServiceNow instance"
+              }
+            },
+            {
+              "name": "Get ServiceNow Stories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3000/api/servicenow/stories",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "servicenow", "stories"]
+                },
+                "description": "Retrieve user stories from ServiceNow"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Case Generation",
+          "item": [
+            {
+              "name": "Generate Test Cases",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"story\": {\n    \"key\": \"PROJ-123\",\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\",\n    \"status\": \"In Progress\",\n    \"priority\": \"High\",\n    \"source\": \"jira\"\n  },\n  \"numTestCases\": 5,\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/test-cases/generate",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "test-cases", "generate"]
+                },
+                "description": "Generate test cases from a user story"
+              }
+            },
+            {
+              "name": "Generate with DeepEval",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"story\": {\n    \"key\": \"PROJ-123\",\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\",\n    \"status\": \"In Progress\",\n    \"priority\": \"High\",\n    \"source\": \"jira\"\n  },\n  \"numTestCases\": 5,\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/test-cases/generate-with-eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "test-cases", "generate-with-eval"]
+                },
+                "description": "Generate test cases with quality evaluation using DeepEval"
+              }
+            },
+            {
+              "name": "Evaluate Test Cases",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"testCases\": [\n    {\n      \"id\": \"TC001\",\n      \"name\": \"Valid Login\",\n      \"description\": \"Test login with valid credentials\",\n      \"steps\": [\n        {\n          \"step\": \"Navigate to login page\",\n          \"expected_result\": \"Login page is displayed\"\n        },\n        {\n          \"step\": \"Enter username and password\",\n          \"expected_result\": \"Credentials are entered\"\n        }\n      ]\n    }\n  ],\n  \"userStory\": {\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\"\n  },\n  \"metrics\": [\"faithfulness\", \"relevancy\", \"hallucination\", \"completeness\"]\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/test-cases/evaluate",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "test-cases", "evaluate"]
+                },
+                "description": "Evaluate test cases quality metrics"
+              }
+            },
+            {
+              "name": "Generate ServiceNow Test Cases",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"requirementId\": \"REQ123\",\n  \"title\": \"Payment Processing\",\n  \"description\": \"Process payment transactions\",\n  \"numTestCases\": 5,\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/test-cases/generate-servicenow",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "test-cases", "generate-servicenow"]
+                },
+                "description": "Generate test cases from ServiceNow requirements"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feature File Generation",
+          "item": [
+            {
+              "name": "Generate Feature File",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"story\": {\n    \"key\": \"PROJ-123\",\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\"\n  },\n  \"numScenarios\": 5,\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/feature-file/generate",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "feature-file", "generate"]
+                },
+                "description": "Generate BDD feature files (Gherkin format)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Story Analysis",
+          "item": [
+            {
+              "name": "Analyze User Story",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"story\": {\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system so that I can access my account\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\"\n  },\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/user-story/analyze",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "user-story", "analyze"]
+                },
+                "description": "Analyze user story using INVEST methodology"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Plan Generation",
+          "item": [
+            {
+              "name": "Generate Test Plan",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"stories\": [\n    {\n      \"key\": \"PROJ-123\",\n      \"title\": \"User Login\",\n      \"description\": \"As a user, I want to login to the system\"\n    }\n  ],\n  \"provider\": \"groq\",\n  \"model\": \"llama-3.3-70b-versatile\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/test-plan/generate",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "test-plan", "generate"]
+                },
+                "description": "Generate comprehensive test plan from user stories"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DeepEval Services",
+      "item": [
+        {
+          "name": "Evaluation Endpoints",
+          "item": [
+            {
+              "name": "LLM + Evaluation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"prompt\": \"Explain quantum computing in simple terms\",\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"temperature\": 0.7,\n  \"metric\": \"answer_relevancy\",\n  \"provider\": \"groq\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3001/api/llm/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "llm", "eval"]
+                },
+                "description": "Generate LLM response and evaluate with DeepEval"
+              }
+            },
+            {
+              "name": "RAG + Evaluation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"How do I reset my password?\",\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"temperature\": 0.7,\n  \"metric\": \"faithfulness\",\n  \"provider\": \"groq\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3001/api/rag/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "rag", "eval"]
+                },
+                "description": "RAG query with context retrieval and evaluation"
+              }
+            },
+            {
+              "name": "Direct Evaluation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"What is machine learning?\",\n  \"output\": \"Machine learning is a subset of artificial intelligence that enables systems to learn from data.\",\n  \"context\": [\"Machine learning is a field of study in artificial intelligence\"],\n  \"metric\": \"faithfulness\",\n  \"provider\": \"groq\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3001/api/eval-only",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "eval-only"]
+                },
+                "description": "Evaluate existing query-output pairs without LLM generation"
+              }
+            },
+            {
+              "name": "Test Cases Evaluation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"testCases\": [\n    {\n      \"id\": \"TC001\",\n      \"name\": \"Valid Login\",\n      \"description\": \"Test login with valid credentials\",\n      \"steps\": [\n        {\n          \"step\": \"Navigate to login page\",\n          \"expected_result\": \"Login page is displayed\"\n        }\n      ]\n    }\n  ],\n  \"userStory\": {\n    \"title\": \"User Login\",\n    \"description\": \"As a user, I want to login to the system\",\n    \"acceptanceCriteria\": \"Given valid credentials, When user submits form, Then user is logged in\"\n  },\n  \"metrics\": [\"faithfulness\", \"relevancy\", \"hallucination\", \"completeness\"],\n  \"provider\": \"groq\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3001/api/test-cases/evaluate",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "test-cases", "evaluate"]
+                },
+                "description": "Evaluate quality metrics for test cases"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health & Metrics",
+          "item": [
+            {
+              "name": "Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3001/api/health",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "health"]
+                },
+                "description": "Check DeepEval service health"
+              }
+            },
+            {
+              "name": "Available Metrics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3001/api/metrics",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "metrics"]
+                },
+                "description": "List available evaluation metrics"
+              }
+            },
+            {
+              "name": "Test Cases Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3001/api/test-cases/evaluate/health",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3001",
+                  "path": ["api", "test-cases", "evaluate", "health"]
+                },
+                "description": "Check test case evaluation service health"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Python DeepEval Server",
+      "item": [
+        {
+          "name": "Evaluation Metrics",
+          "item": [
+            {
+              "name": "Evaluate Faithfulness",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"What is AI?\",\n  \"context\": [\"AI stands for Artificial Intelligence, which enables machines to learn from data\"],\n  \"output\": \"AI is a technology that makes computers smart\",\n  \"metric\": \"faithfulness\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate faithfulness (factual consistency) of output to context"
+              }
+            },
+            {
+              "name": "Evaluate Answer Relevancy",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"What is machine learning?\",\n  \"output\": \"Machine learning is a subset of AI that allows systems to learn from data without being explicitly programmed\",\n  \"metric\": \"answer_relevancy\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate relevancy of answer to the question"
+              }
+            },
+            {
+              "name": "Evaluate Hallucination",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"context\": [\"Python is a programming language\", \"Java is also a programming language\"],\n  \"output\": \"Python and C++ are the most popular programming languages\",\n  \"metric\": \"hallucination\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Detect hallucinations (false or unsupported claims) in output"
+              }
+            },
+            {
+              "name": "Evaluate Contextual Precision",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"What is Python used for?\",\n  \"context\": [\"Python is used for data science\", \"Python is used for web development\", \"Python is a dinosaur\"],\n  \"expected_output\": \"Python is used for data science and web development\",\n  \"metric\": \"contextual_precision\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate precision of retrieved context in RAG systems"
+              }
+            },
+            {
+              "name": "Evaluate Contextual Recall",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"What are the benefits of Python?\",\n  \"context\": [\"Python has simple syntax\"],\n  \"expected_output\": \"Python has simple syntax, large community, and diverse libraries\",\n  \"metric\": \"contextual_recall\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate recall of retrieved context in RAG systems"
+              }
+            },
+            {
+              "name": "Evaluate Completeness",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"List the steps to deploy an application\",\n  \"output\": \"Deploy by pushing code to server\",\n  \"metric\": \"completeness\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate completeness of the response"
+              }
+            },
+            {
+              "name": "Evaluate Conversation Completeness",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"messages\": [\n    {\"role\": \"user\", \"content\": \"Hello\"},\n    {\"role\": \"assistant\", \"content\": \"Hi there! How can I help?\"},\n    {\"role\": \"user\", \"content\": \"What is AI?\"},\n    {\"role\": \"assistant\", \"content\": \"AI is artificial intelligence\"}\n  ],\n  \"metric\": \"conversation_completeness\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/eval",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8000",
+                  "path": ["eval"]
+                },
+                "description": "Evaluate completeness of a multi-turn conversation"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Environment Variables Reference",
+      "description": "Configuration for different LLM providers",
+      "item": [
+        {
+          "name": "Groq Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "health"]
+            },
+            "description": "Required .env variables for Groq:\n\nLLM_PROVIDER=groq\nGROQ_API_KEY=gsk_your_groq_api_key\nEVAL_MODEL=llama-3.3-70b-versatile\n\nLLM_PROVIDER=groq (deepeval-demo/.env)\nGROQ_API_KEY=gsk_your_groq_api_key"
+          }
+        },
+        {
+          "name": "Azure OpenAI Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "health"]
+            },
+            "description": "Required .env variables for Azure OpenAI:\n\nLLM_PROVIDER=azure-openai\nAZURE_OPENAI_API_KEY=your_azure_key\nAZURE_OPENAI_API_ENDPOINT=https://your-resource.openai.azure.com/\nAZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1\nAZURE_OPENAI_API_VERSION=2025-01-01-preview\nEVAL_MODEL=gpt-4.1\n\nIn deepeval-demo/.env:\nLLM_PROVIDER=azure-openai\nAZURE_OPENAI_API_KEY=your_azure_key\nAZURE_OPENAI_API_ENDPOINT=https://your-resource.openai.azure.com/\nAZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1"
+          }
+        },
+        {
+          "name": "OpenAI Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "health"]
+            },
+            "description": "Required .env variables for OpenAI:\n\nLLM_PROVIDER=openai\nOPENAI_API_KEY=sk_your_openai_api_key\nEVAL_MODEL=gpt-4o-mini\n\nIn deepeval-demo/.env:\nLLM_PROVIDER=openai\nOPENAI_API_KEY=sk_your_openai_api_key"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url_backend",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "base_url_deepeval",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "base_url_python",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "llm_provider",
+      "value": "groq",
+      "type": "string"
+    },
+    {
+      "key": "model_name",
+      "value": "llama-3.3-70b-versatile",
+      "type": "string"
+    }
+  ]
+}
