@@ -163,7 +163,6 @@ export function TestCasesGenerator() {
       // Fetch default integration from backend first
       let integrationToUse: 'jira' | 'servicenow' = 'jira';
       let isIntegrationConnected = false;
-      let llmConfigured = false;
       
       try {
         const configResponse = await fetch(`${API_BASE_URL}/api/config`);
@@ -171,9 +170,6 @@ export function TestCasesGenerator() {
           const config = await configResponse.json();
           integrationToUse = config.integrations?.defaultIntegration || 'jira';
           setDefaultIntegration(integrationToUse);
-          
-          // Check if LLM is configured
-          llmConfigured = config.llm?.configuredProviders?.length > 0;
           
           // Check if default integration is connected
           if (integrationToUse === 'jira') {
@@ -189,13 +185,7 @@ export function TestCasesGenerator() {
         return;
       }
       
-      // Verify prerequisites
-      if (!llmConfigured) {
-        setStoriesError('No LLM provider configured. Please configure an LLM provider in settings.');
-        setLoadingStories(false);
-        return;
-      }
-      
+      // Verify prerequisites - only check integration connection
       if (!isIntegrationConnected) {
         const integrationName = integrationToUse === 'jira' ? 'Jira' : 'ServiceNow';
         setStoriesError(`${integrationName} is not connected. Please check the connection status or credentials.`);

@@ -1344,6 +1344,302 @@ Please:
         return baseContent;
     }
 }
+/**
+ * POST /api/test-cases/export
+ * Export test cases to Jira or ServiceNow Test Management 2.0
+ */
+app.post('/api/test-cases/export', async (req, res) => {
+    try {
+        const { testCases, integration, storyKey } = req.body;
+        if (!testCases || !Array.isArray(testCases) || testCases.length === 0) {
+            return res.status(400).json({ error: 'Test cases array is required' });
+        }
+        if (!integration || (integration !== 'jira' && integration !== 'servicenow')) {
+            return res.status(400).json({ error: 'Valid integration type (jira or servicenow) is required' });
+        }
+        console.log(`[Test Case Export] Exporting ${testCases.length} test cases to ${integration}`);
+        if (integration === 'jira') {
+            const jiraSession = req.session?.jira;
+            if (!jiraSession) {
+                return res.status(401).json({ error: 'Jira not connected. Please connect to Jira first.' });
+            }
+            const baseUrl = jiraSession.baseUrl.endsWith('/') ? jiraSession.baseUrl : `${jiraSession.baseUrl}/`;
+            const authHeader = `Basic ${btoa(`${jiraSession.email}:${jiraSession.apiToken}`)}`;
+            const results = {
+                success: true,
+                created: [],
+                failed: [],
+            };
+            let projectKey = '';
+            if (storyKey) {
+                try {
+                    const storyResponse = await axios.get(`${baseUrl}rest/api/3/issue/${storyKey}`, {
+                        headers: {
+                            Authorization: authHeader,
+                            Accept: 'application/json',
+                        },
+                    });
+                    projectKey = storyResponse.data.fields.project.key;
+                }
+                catch (err) {
+                    console.error('[Jira] Failed to get project key from story:', err);
+                }
+            }
+            if (!projectKey) {
+                return res.status(400).json({ error: 'Could not determine project key from story' });
+            }
+            for (const testCase of testCases) {
+                try {
+                    const response = await axios.post(`${baseUrl}rest/api/3/issue`, {
+                        fields: {
+                            project: { key: projectKey },
+                            summary: testCase.name,
+                            description: {
+                                type: 'doc',
+                                version: 1,
+                                content: [
+                                    {
+                                        type: 'paragraph',
+                                        content: [{ type: 'text', text: testCase.description || testCase.short_description || '' }],
+                                    },
+                                    ...(testCase.steps && testCase.steps.length > 0 ? [
+                                        {
+                                            type: 'heading',
+                                            attrs: { level: 3 },
+                                            content: [{ type: 'text', text: 'Test Steps' }],
+                                        },
+                                        {
+                                            type: 'orderedList',
+                                            content: testCase.steps.map((step) => ({
+                                                type: 'listItem',
+                                                content: [
+                                                    {
+                                                        type: 'paragraph',
+                                                        content: [
+                                                            { type: 'text', text: `${step.step}`, marks: [{ type: 'strong' }] },
+                                                        ],
+                                                    },
+                                                    {
+                                                        type: 'paragraph',
+                                                        content: [
+                                                            { type: 'text', text: `Expected: ${step.expected_result}` },
+                                                        ],
+                                                    },
+                                                    ...(step.test_data ? [{
+                                                            type: 'paragraph',
+                                                            content: [
+                                                                { type: 'text', text: `Test Data: ${step.test_data}` },
+                                                            ],
+                                                        }] : []),
+                                                ],
+                                            })),
+                                        },
+                                    ] : []),
+                                ],
+                            },
+                            issuetype: { name: 'Task' },
+                            priority: { name: testCase.priority || 'Medium' },
+                            ...(storyKey && { parent: { key: storyKey } }),
+                        },
+                    }, {
+                        headers: {
+                            Authorization: authHeader,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                        },
+                    });
+                    const createdIssue = response.data;
+                    results.created.push({
+                        localId: testCase.id,
+                        remoteId: createdIssue.key,
+                        name: testCase.name,
+                        url: `${baseUrl}browse/${createdIssue.key}`,
+                    });
+                    console.log(`[Jira] Created test case: ${createdIssue.key}`);
+                }
+                catch (error) {
+                    const errorMsg = error.response?.data?.errorMessages?.[0] || error.message;
+                    results.failed.push({
+                        localId: testCase.id,
+                        name: testCase.name,
+                        error: errorMsg,
+                    });
+                    results.success = false;
+                    console.error(`[Jira] Failed to create test case ${testCase.name}:`, errorMsg);
+                }
+            }
+            return res.json({
+                success: results.success,
+                message: `Exported ${results.created.length} test cases to Jira`,
+                created: results.created,
+                failed: results.failed,
+                summary: {
+                    total: testCases.length,
+                    created: results.created.length,
+                    failed: results.failed.length,
+                },
+            });
+        }
+        else if (integration === 'servicenow') {
+            const snowSession = req.session?.servicenow;
+            if (!snowSession) {
+                return res.status(401).json({ error: 'ServiceNow not connected. Please connect to ServiceNow first.' });
+            }
+            const baseUrl = snowSession.instanceUrl.endsWith('/') ? snowSession.instanceUrl : `${snowSession.instanceUrl}/`;
+            const authHeader = `Basic ${btoa(`${snowSession.username}:${snowSession.password}`)}`;
+            const results = {
+                success: true,
+                created: [],
+                failed: [],
+            };
+            for (const testCase of testCases) {
+                try {
+                    // Step 1: Create test case in sn_test_management_test table
+                    const testResponse = await axios.post(`${baseUrl}api/now/table/sn_test_management_test`, {
+                        short_description: testCase.name,
+                        description: testCase.description || testCase.short_description || '',
+                        test_type: testCase.test_type || 'manual',
+                        priority: mapPriorityToServiceNow(testCase.priority),
+                        state: 'draft',
+                    }, {
+                        headers: {
+                            Authorization: authHeader,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                        },
+                    });
+                    const createdTest = testResponse.data.result || testResponse.data;
+                    const testSysId = createdTest.sys_id;
+                    const testNumber = createdTest.number || testSysId;
+                    console.log(`[ServiceNow TM 2.0] Created test case: ${testNumber} (${testSysId})`);
+                    // Step 2: Create version in sn_test_management_test_version table
+                    const versionResponse = await axios.post(`${baseUrl}api/now/table/sn_test_management_test_version`, {
+                        test: testSysId,
+                        version: testCase.version || '1.0',
+                        short_description: testCase.name,
+                        description: testCase.description || testCase.short_description || '',
+                        state: 'draft',
+                        priority: mapPriorityToServiceNow(testCase.priority),
+                    }, {
+                        headers: {
+                            Authorization: authHeader,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                        },
+                    });
+                    const createdVersion = versionResponse.data.result || versionResponse.data;
+                    const versionSysId = createdVersion.sys_id;
+                    console.log(`[ServiceNow TM 2.0] Created version: ${versionSysId}`);
+                    // Step 3: Create steps in sn_test_management_step table
+                    if (testCase.steps && testCase.steps.length > 0) {
+                        for (let i = 0; i < testCase.steps.length; i++) {
+                            const step = testCase.steps[i];
+                            await axios.post(`${baseUrl}api/now/table/sn_test_management_step`, {
+                                test_version: versionSysId,
+                                order: step.order || (i + 1) * 100,
+                                step: step.step || '',
+                                expected_result: step.expected_result || '',
+                                test_data: step.test_data || '',
+                            }, {
+                                headers: {
+                                    Authorization: authHeader,
+                                    'Content-Type': 'application/json',
+                                    Accept: 'application/json',
+                                },
+                            });
+                        }
+                        console.log(`[ServiceNow TM 2.0] Created ${testCase.steps.length} test steps`);
+                    }
+                    // Step 4: Link test case to story if story_id exists
+                    if (testCase.story_id) {
+                        try {
+                            await axios.post(`${baseUrl}api/now/table/sn_test_management_m2m_task_test`, {
+                                task: testCase.story_id,
+                                test: testSysId,
+                            }, {
+                                headers: {
+                                    Authorization: authHeader,
+                                    'Content-Type': 'application/json',
+                                    Accept: 'application/json',
+                                },
+                            });
+                            console.log(`[ServiceNow TM 2.0] Linked test case to story: ${testCase.story_id}`);
+                            // Step 5: Add work note to story with test case name
+                            if (testCase.story_id) {
+                                try {
+                                    await axios.patch(`${baseUrl}api/now/table/task/${testCase.story_id}`, {
+                                        work_notes: `Test case linked: [${testNumber}] ${testCase.name}`,
+                                    }, {
+                                        headers: {
+                                            Authorization: authHeader,
+                                            'Content-Type': 'application/json',
+                                            Accept: 'application/json',
+                                        },
+                                    });
+                                    console.log(`[ServiceNow TM 2.0] Added work note to story: ${testCase.story_id}`);
+                                }
+                                catch (noteError) {
+                                    console.warn(`[ServiceNow TM 2.0] Failed to add work note to ${testCase.story_id}: ${noteError.message}`);
+                                }
+                            }
+                            else {
+                                console.warn(`[ServiceNow TM 2.0] No story_id provided for test case, skipping work note`);
+                            }
+                        }
+                        catch (linkError) {
+                            console.warn(`[ServiceNow TM 2.0] Failed to link test to story: ${linkError.message}`);
+                        }
+                    }
+                    results.created.push({
+                        localId: testCase.id,
+                        remoteId: testNumber,
+                        name: testCase.name,
+                        url: `${baseUrl}sn_test_management_test.do?sys_id=${testSysId}`,
+                    });
+                }
+                catch (error) {
+                    const errorMsg = error.response?.data?.error?.message || error.message;
+                    results.failed.push({
+                        localId: testCase.id,
+                        name: testCase.name,
+                        error: errorMsg,
+                    });
+                    results.success = false;
+                    console.error(`[ServiceNow TM 2.0] Failed to create test case ${testCase.name}:`, errorMsg);
+                }
+            }
+            return res.json({
+                success: results.success,
+                message: `Exported ${results.created.length} test cases to ServiceNow Test Management 2.0`,
+                created: results.created,
+                failed: results.failed,
+                summary: {
+                    total: testCases.length,
+                    created: results.created.length,
+                    failed: results.failed.length,
+                },
+            });
+        }
+        else {
+            return res.status(400).json({ error: 'Invalid integration type' });
+        }
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('[Test Case Export] Error:', errorMessage);
+        return res.status(500).json({ error: `Failed to export test cases: ${errorMessage}` });
+    }
+});
+// Helper function to map priority to ServiceNow values
+function mapPriorityToServiceNow(priority) {
+    const priorityMap = {
+        'Critical': '1',
+        'High': '2',
+        'Medium': '3',
+        'Low': '4',
+    };
+    return priorityMap[priority] || '3';
+}
 // Extract description helper
 function extractDescription(desc) {
     if (!desc)

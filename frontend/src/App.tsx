@@ -12,7 +12,7 @@ import {
 import { RequirementAnalysis } from './components/RequirementAnalysis';
 import { Settings } from './components/Settings';
 import { TestCases } from './components/TestCases';
-import { TestCasesGenerator } from './components/TestCasesGenerator';
+import { TestCasesGeneratorTabs } from './components/TestCasesGeneratorTabs';
 import { SwaggerAPI } from './components/SwaggerAPI';
 import { VisualTesting } from './components/VisualTesting';
 import { TestPlan } from './components/TestPlan';
@@ -34,6 +34,11 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
+  {
+    id: 7,
+    title: 'Epic & Story Extraction',
+    icon: <Workflow className="w-5 h-5" />,
+  },
   {
     id: 1,
     title: 'Requirement Analysis',
@@ -64,11 +69,7 @@ const menuItems: MenuItem[] = [
     title: 'Test Plan',
     icon: <ClipboardList className="w-5 h-5" />,
   },
-  {
-    id: 7,
-    title: 'Epic & Story Extraction',
-    icon: <Workflow className="w-5 h-5" />,
-  },
+  
  /* {
     id: 4,
     title: 'Test Data Generator',
@@ -341,7 +342,7 @@ function App() {
             {selectedMenu === 1 ? (
               <RequirementAnalysis />
             ) : selectedMenu === 2 ? (
-              <TestCasesGenerator />
+              <TestCasesGeneratorTabs />
             ) : selectedMenu === 3 ? (
               <SwaggerAPI />
             ) : selectedMenu === 4 ? (
