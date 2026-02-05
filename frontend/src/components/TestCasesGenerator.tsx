@@ -42,6 +42,7 @@ interface QualityMetrics {
     relevancy?: MetricScore;
     hallucination?: MetricScore;
     completeness?: MetricScore;
+    pii_leakage?: MetricScore;
   };
   suggestions?: string[];
 }
@@ -59,7 +60,7 @@ export function TestCasesGenerator() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [loadingStories, setLoadingStories] = useState(false);
   const [storiesError, setStoriesError] = useState<string | null>(null);
-  const [defaultIntegration, setDefaultIntegration] = useState<'jira' | 'servicenow'>('jira');
+  const [, setDefaultIntegration] = useState<'jira' | 'servicenow'>('jira');
 
   const getPersistentProvider = (): LLMProvider => {
     const saved = localStorage.getItem('selected_llm_provider');
@@ -445,11 +446,11 @@ export function TestCasesGenerator() {
   const getMetricBadgeClass = (score?: number, metricName?: string) => {
     if (typeof score !== 'number') return 'bg-slate-100 text-slate-500 border border-slate-200';
     
-    // For hallucination, lower is better (inverse logic)
-    if (metricName === 'hallucination') {
-      if (score <= 0.2) return 'bg-green-100 text-green-700 border border-green-300';
-      if (score <= 0.5) return 'bg-yellow-100 text-yellow-700 border border-yellow-300';
-      return 'bg-red-100 text-red-700 border border-red-300';
+    // For hallucination and pii_leakage, lower is better (inverse logic)
+    if (metricName === 'hallucination' || metricName === 'pii_leakage') {
+      if (score <= 0.2) return 'bg-green-100 text-green-700 border border-green-300'; // 0-20%: No PII/hallucination
+      if (score <= 0.5) return 'bg-yellow-100 text-yellow-700 border border-yellow-300'; // 20-50%: Some PII/hallucination
+      return 'bg-red-100 text-red-700 border border-red-300'; // 50-100%: Significant PII/hallucination
     }
     
     // For other metrics, higher is better
@@ -770,6 +771,7 @@ export function TestCasesGenerator() {
                   <th className="px-4 py-3 text-center font-semibold text-slate-700">Relevancy</th>
                   <th className="px-4 py-3 text-center font-semibold text-slate-700">Hallucination</th>
                   <th className="px-4 py-3 text-center font-semibold text-slate-700">Completeness</th>
+                  <th className="px-4 py-3 text-center font-semibold text-slate-700">PII Leakage</th>
                   <th className="px-4 py-3 text-left font-semibold text-slate-700">Type</th>
                   <th className="px-4 py-3 text-left font-semibold text-slate-700">Priority</th>
                   <th className="px-4 py-3 text-left font-semibold text-slate-700">Story ID</th>
@@ -818,6 +820,7 @@ export function TestCasesGenerator() {
                                 `Relevancy: ${formatMetricPercent(testCase.quality.metrics.relevancy?.score)}`,
                                 `Hallucination: ${formatMetricPercent(testCase.quality.metrics.hallucination?.score)}`,
                                 `Completeness: ${formatMetricPercent(testCase.quality.metrics.completeness?.score)}`,
+                                `PII Leakage: ${formatMetricPercent(testCase.quality.metrics.pii_leakage?.score)}`,
                               ].join('\n')}
                             >
                               {(testCase.quality.overallScore * 100).toFixed(0)}%
@@ -841,6 +844,9 @@ export function TestCasesGenerator() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {renderMetricBadge(testCase.quality?.metrics.completeness, 'completeness')}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {renderMetricBadge(testCase.quality?.metrics.pii_leakage, 'pii_leakage')}
                       </td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 border border-blue-300 inline-block">

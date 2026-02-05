@@ -33,6 +33,7 @@ export interface TestCaseEvaluation {
     relevancy?: MetricScore;
     hallucination?: MetricScore;
     completeness?: MetricScore;
+    pii_leakage?: MetricScore;
   };
   suggestions?: string[];
 }
@@ -86,6 +87,11 @@ function generateSuggestions(
     if (metrics.completeness && metrics.completeness.score < 0.7) {
       suggestions.push(
         "Test case may not completely cover all acceptance criteria. Review the user story and add missing test coverage."
+      );
+    }
+    if (metrics.pii_leakage && metrics.pii_leakage.score > 0.2) {
+      suggestions.push(
+        "⚠️ PII detected in test case! Contains sensitive data like emails, phone numbers, or SSNs. Replace with anonymized test data (e.g., test@example.com, 555-0000)."
       );
     }
     if (suggestions.length === 0) {
@@ -232,6 +238,28 @@ async function evaluateSingleTestCase(
     );
   }
 
+  // PII Leakage evaluation
+  if (metricsToEvaluate.includes("pii_leakage")) {
+    metricPromises.push(
+      (async () => {
+        try {
+          const result = await evalWithFields({
+            output: testCaseText,
+            metric: "pii_leakage",
+            provider: provider,
+          });
+          // DeepEval PII: 0 = no PII (good), higher = PII detected (bad)
+          const score = result.score ?? 0;
+          console.log(`[PII Leakage] Score: ${score}`, { testCaseId: testCase.id, score });
+          return ["pii_leakage", score, result.explanation || "No PII detected"] as const;
+        } catch (error) {
+          console.error(`PII Leakage evaluation failed for ${testCase.id}:`, error);
+          return ["pii_leakage", 0, `Evaluation failed: ${error instanceof Error ? error.message : "Unknown error"}`] as const;
+        }
+      })()
+    );
+  }
+
   // Wait for all metrics to complete
   const results = await Promise.all(metricPromises);
   
@@ -249,6 +277,11 @@ async function evaluateSingleTestCase(
     } else if (metricName === "completeness") {
       metrics.completeness = { score, explanation };
       scores.push(score);
+    } else if (metricName === "pii_leakage") {
+      metrics.pii_leakage = { score, explanation };
+      // PII leakage score: 0.0 = good (no PII), 1.0 = bad (PII detected)
+      // Invert for overall score calculation (convert to goodness: 1 - score)
+      scores.push(1 - score);
     }
   }
 
@@ -273,7 +306,7 @@ async function evaluateSingleTestCase(
 export async function evaluateTestCases(
   testCases: TestCaseInput[],
   userStory: UserStoryInput,
-  metrics: string[] = ["faithfulness", "relevancy", "hallucination", "completeness"],
+  metrics: string[] = ["faithfulness", "relevancy", "hallucination", "completeness", "pii_leakage"],
   llmProvider?: string
 ): Promise<TestCaseEvaluationResult> {
   console.log(`[TestCaseEval] Evaluating ${testCases.length} test cases`);

@@ -264,7 +264,8 @@ class MetricEvaluator:
         "contextual_precision": "Evaluates the precision of retrieval in RAG systems (natural LLM judgment, requires expected_output)",
         "contextual_recall": "Evaluates the recall of retrieval in RAG systems (natural LLM judgment, requires expected_output)",
         "conversation_completeness": "Evaluates if a conversation covers all necessary topics (requires conversational context)",
-        "hallucination": "Detects hallucinations in LLM output compared to context (lower is better, 0 = no hallucinations)"
+        "hallucination": "Detects hallucinations in LLM output compared to context (lower is better, 0 = no hallucinations)",
+        "pii_leakage": "Detects personally identifiable information (PII) leaks in LLM output (lower is better, 0 = no PII detected)"
     }
     
     def __init__(self, api_key: str, model_name: str = "llama-3.3-70b-versatile", use_groq: bool = False, 
@@ -509,6 +510,45 @@ class MetricEvaluator:
             raise
         return score, explanation
 
+    def evaluate_pii_leakage(self, test_case) -> tuple[float, str]:
+        """
+        Pure DeepEval PII Leakage detection.
+        Detects personally identifiable information in LLM output.
+        
+        Checks for:
+        - Names, emails, phone numbers
+        - SSN, credit card numbers, passport numbers
+        - Addresses, IP addresses
+        - Medical record numbers, driver's license numbers
+        - Financial account numbers
+        
+        Note: Lower is better. 0.0 = no PII detected, 1.0 = PII detected.
+        Requires: actual_output (output to scan for PII)
+        """
+        try:
+            from deepeval.metrics import PIILeakageMetric
+
+            metric = PIILeakageMetric(
+                model=self.model,
+                include_reason=True,
+                async_mode=False,
+                strict_mode=False,
+            )
+
+            logger.info(f"[PII Leakage] Measuring with model: {self.model_name}")
+            raw_score = metric.measure(test_case)
+            # Invert DeepEval's compliance score: 0.0 = no PII (good), 1.0 = PII detected (bad)
+            score = 1.0 - raw_score
+            explanation = metric.reason or "PII leakage score (lower is better: 0.0 = no PII detected, 1.0 = PII found)."
+            logger.info(f"[PII Leakage] Raw: {raw_score}, Inverted: {score}")
+            return score, explanation
+        except ImportError:
+            logger.error("[PII Leakage] PIILeakageMetric not available in this version of deepeval")
+            raise ValueError("PIILeakageMetric requires deepeval >= 1.0.0. Please upgrade: pip install --upgrade deepeval")
+        except Exception as e:
+            logger.error(f"[PII Leakage] Error: {str(e)}", exc_info=True)
+            raise
+
     def evaluate(
         self,
         metric_name: str,
@@ -590,6 +630,8 @@ class MetricEvaluator:
             return self.evaluate_conversation_completeness(test_case)
         elif metric_name == "hallucination":
             return self.evaluate_hallucination(test_case)
+        elif metric_name == "pii_leakage":
+            return self.evaluate_pii_leakage(test_case)
         else:
             raise ValueError(f"Metric {metric_name} is not implemented yet")
 
@@ -900,14 +942,19 @@ async def metrics_info():
             "required": ["output", "context"],
             "recommended": ["query"],
             "optional": []
+        },
+        "pii_leakage": {
+            "required": ["output"],
+            "recommended": [],
+            "optional": ["query", "context"]
         }
     }
     
     for metric_name, description in MetricEvaluator.SUPPORTED_METRICS.items():
         requirements = metric_requirements.get(metric_name, {})
         
-        # Hallucination has inverse scoring (lower is better)
-        higher_is_better = True if metric_name != "hallucination" else False
+        # Hallucination and PII Leakage have inverse scoring (lower is better)
+        higher_is_better = True if metric_name not in ["hallucination", "pii_leakage"] else False
         
         metrics.append({
             "name": metric_name,
@@ -978,6 +1025,10 @@ async def metrics_info():
                 "context": ["Selenium is a web automation framework for testing web applications."],
                 "output": "Selenium is a CRM platform developed by Salesforce.",
                 "metric": "hallucination"
+            },
+            "pii_leakage": {
+                "output": "Contact John Doe at john.doe@example.com or call 555-123-4567. His SSN is 123-45-6789.",
+                "metric": "pii_leakage"
             },
             "multiple_metrics": {
                 "query": "What is Selenium?",

@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import axios from 'axios';
 import { connectionManager } from './services/connectionManager.js';
+import fileUploadRoutes from './routes/fileUploadRoutes.js';
 const app = express();
 const PORT = parseInt(process.env.PORT || '8080', 10);
 const CORS_ORIGIN = process.env.CORS_ORIGIN;
@@ -59,6 +60,8 @@ app.use((req, _res, next) => {
     }
     next();
 });
+// Register file upload routes
+app.use('/api/files', fileUploadRoutes);
 // Health check endpoint with connection status
 app.get('/api/health', (_req, res) => {
     const connections = connectionManager.getState();
@@ -667,7 +670,7 @@ Requirements:
                     description: story.description,
                     acceptanceCriteria: story.acceptanceCriteria
                 },
-                metrics: ['faithfulness', 'relevancy', 'hallucination', 'completeness'],
+                metrics: ['faithfulness', 'relevancy', 'hallucination', 'completeness', 'pii_leakage'],
                 provider: provider
             }, {
                 headers: { 'Content-Type': 'application/json' },

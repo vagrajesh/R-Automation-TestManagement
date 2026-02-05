@@ -15,7 +15,7 @@ export function RequirementAnalysis() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [defaultIntegration, setDefaultIntegration] = useState<'jira' | 'servicenow'>('jira');
+  const [, setDefaultIntegration] = useState<'jira' | 'servicenow'>('jira');
 
   useEffect(() => {
     const loadStories = async () => {

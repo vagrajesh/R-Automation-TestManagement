@@ -91,7 +91,7 @@ router.post(
     }
 
     // Validate metrics if provided
-    const validMetrics = ["faithfulness", "relevancy", "answer_relevancy", "hallucination", "completeness"];
+    const validMetrics = ["faithfulness", "relevancy", "answer_relevancy", "hallucination", "completeness", "pii_leakage"];
     const effectiveMetrics = metrics || ["faithfulness", "relevancy"];
     
     for (const metric of effectiveMetrics) {
@@ -132,7 +132,7 @@ router.get("/test-cases/evaluate/health", (req: Request, res: Response) => {
     status: "ok",
     service: "test-case-evaluation",
     timestamp: new Date().toISOString(),
-    availableMetrics: ["faithfulness", "relevancy", "hallucination", "completeness"],
+    availableMetrics: ["faithfulness", "relevancy", "hallucination", "completeness", "pii_leakage"],
   });
 });
 

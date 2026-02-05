@@ -2,13 +2,12 @@ import { useState, useEffect } from 'react';
 import {
   FileText,
   TestTubes,
-  Database,
-  Eye,
   Wand2,
   Menu,
   X,
   Settings as SettingsIcon,
   ClipboardList,
+  Workflow,
 } from 'lucide-react';
 import { RequirementAnalysis } from './components/RequirementAnalysis';
 import { Settings } from './components/Settings';
@@ -18,6 +17,7 @@ import { SwaggerAPI } from './components/SwaggerAPI';
 import { VisualTesting } from './components/VisualTesting';
 import { TestPlan } from './components/TestPlan';
 import { StatusBadge } from './components/StatusBadge';
+import { EpicStoryExtraction } from './components/EpicStoryExtraction';
 
 // Get API base URL from environment, defaults to localhost:8080
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -63,6 +63,11 @@ const menuItems: MenuItem[] = [
     id: 6,
     title: 'Test Plan',
     icon: <ClipboardList className="w-5 h-5" />,
+  },
+  {
+    id: 7,
+    title: 'Epic & Story Extraction',
+    icon: <Workflow className="w-5 h-5" />,
   },
  /* {
     id: 4,
@@ -343,6 +348,8 @@ function App() {
               <VisualTesting />
             ) : selectedMenu === 6 ? (
               <TestPlan />
+            ) : selectedMenu === 7 ? (
+              <EpicStoryExtraction />
             ) : selectedMenu === 12 ? (
               <TestCases />
             ) : selectedMenu === 13 ? (
