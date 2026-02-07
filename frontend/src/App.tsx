@@ -8,6 +8,10 @@ import {
   Settings as SettingsIcon,
   ClipboardList,
   Workflow,
+  ChevronRight,
+  Home,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { RequirementAnalysis } from './components/RequirementAnalysis';
 import { Settings } from './components/Settings';
@@ -125,6 +129,7 @@ const menuItems: MenuItem[] = [
 function App() {
   const [selectedMenu, setSelectedMenu] = useState<number>(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [llmStatus, setLlmStatus] = useState<{ provider: LLMProvider | null; isConnected: boolean; isLoading: boolean }>({
     provider: null,
     isConnected: false,
@@ -278,15 +283,19 @@ function App() {
   const selectedItem = menuItems.find((item) => item.id === selectedMenu);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className={`min-h-screen flex ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
       <div
         className={`${
           sidebarOpen ? 'w-64' : 'w-0'
-        } bg-gradient-to-b from-blue-900 to-blue-800 transition-all duration-300 overflow-hidden`}
+        } transition-all duration-300 overflow-hidden ${
+          darkMode
+            ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-900'
+            : 'bg-gradient-to-b from-slate-900 to-slate-800'
+        }`}
       >
-        <div className="p-6 border-b border-blue-700">
-          <h1 className="text-2xl font-bold text-white">QA Suite</h1>
-          <p className="text-blue-100 text-sm mt-1">Automation Tools</p>
+        <div className="p-6 border-b border-slate-700">
+          <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-200 to-purple-300 bg-clip-text text-transparent tracking-wider drop-shadow-lg">R-Automation</h1>
+          <p className="text-slate-300 text-sm mt-1 font-semibold tracking-wide">Test Management</p>
         </div>
 
         <nav className="mt-6 space-y-1 px-3">
@@ -296,8 +305,10 @@ function App() {
               onClick={() => setSelectedMenu(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group ${
                 selectedMenu === item.id
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+                  ? 'bg-teal-600 text-white shadow-md hover:bg-teal-700'
+                  : darkMode
+                  ? 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
               <div className="flex-shrink-0">{item.icon}</div>
@@ -308,36 +319,81 @@ function App() {
       </div>
 
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-          <h2 className="text-2xl font-bold text-slate-900">{selectedItem?.title}</h2>
-          <div className="flex items-center gap-3">
-            {llmStatus.provider && (
-              <StatusBadge
-                provider={LLM_PROVIDERS[llmStatus.provider]?.name || llmStatus.provider}
-                isConnected={llmStatus.isConnected}
-                isLoading={llmStatus.isLoading}
-              />
+        {/* Header with Breadcrumb */}
+        <div className={`px-6 py-4 border-b ${
+          darkMode
+            ? 'bg-slate-900 border-slate-800'
+            : 'bg-white border-slate-200'
+        }`}>
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center gap-2 mb-3">
+            <button
+              onClick={() => setSelectedMenu(1)}
+              className={`flex items-center gap-1 transition-colors ${
+                darkMode
+                  ? 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">Home</span>
+            </button>
+            {selectedItem && selectedMenu !== 1 && (
+              <>
+                <ChevronRight className={`w-4 h-4 ${darkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{selectedItem.title}</span>
+              </>
             )}
-            {defaultIntegration && integrationStatus.isConnected && (
-              <StatusBadge
-                provider={defaultIntegration === 'jira' ? 'Jira' : 'ServiceNow'}
-                isConnected={integrationStatus.isConnected}
-                isLoading={integrationStatus.isLoading}
-              />
-            )}
-            {!llmStatus.provider && (!defaultIntegration || !integrationStatus.isConnected) && (
-              <div className="text-xs text-slate-500">No integrations configured</div>
-            )}
+          </div>
+
+          {/* Top Bar with Title and Status */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={`p-2 rounded-lg transition-colors ${
+                darkMode
+                  ? 'hover:bg-slate-800 text-slate-400'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            <h2 className={`text-2xl font-bold ${darkMode ? 'text-slate-100' : 'text-slate-900'}`}>{selectedItem?.title}</h2>
+            <div className="flex items-center gap-3">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700'
+                    : 'hover:bg-slate-100 text-slate-600'
+                }`}
+                title={darkMode ? 'Light mode' : 'Dark mode'}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              {llmStatus.provider && (
+                <StatusBadge
+                  provider={LLM_PROVIDERS[llmStatus.provider]?.name || llmStatus.provider}
+                  isConnected={llmStatus.isConnected}
+                  isLoading={llmStatus.isLoading}
+                />
+              )}
+              {defaultIntegration && integrationStatus.isConnected && (
+                <StatusBadge
+                  provider={defaultIntegration === 'jira' ? 'Jira' : 'ServiceNow'}
+                  isConnected={integrationStatus.isConnected}
+                  isLoading={integrationStatus.isLoading}
+                />
+              )}
+              {!llmStatus.provider && (!defaultIntegration || !integrationStatus.isConnected) && (
+                <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>No integrations configured</div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 p-8 overflow-auto">
+        <div className={`flex-1 p-8 overflow-auto ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
           <div className="max-w-6xl">
             {selectedMenu === 1 ? (
               <RequirementAnalysis />

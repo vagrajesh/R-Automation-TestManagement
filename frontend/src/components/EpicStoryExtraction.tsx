@@ -202,46 +202,46 @@ export function EpicStoryExtraction() {
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex gap-4 border-b border-slate-200">
+      {/* Tabs - Modern Card Style */}
+      <div className="flex gap-3 bg-gradient-to-r from-slate-50 to-slate-100 p-1 rounded-xl border border-slate-200">
         <button
           onClick={() => setActiveTab('upload')}
-          className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+          className={`px-6 py-3 font-semibold transition-all flex items-center gap-2 rounded-lg ${
             activeTab === 'upload'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-blue-600 shadow-md border border-blue-200'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
-          <Upload className="w-4 h-4" />
-          1. Upload Files
+          <Upload className="w-5 h-5" />
+          Upload Files
         </button>
         <button
           onClick={() => setActiveTab('review')}
           disabled={epics.length === 0}
-          className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+          className={`px-6 py-3 font-semibold transition-all flex items-center gap-2 rounded-lg ${
             activeTab === 'review'
-              ? 'border-b-2 border-blue-600 text-blue-600'
+              ? 'bg-white text-blue-600 shadow-md border border-blue-200'
               : epics.length === 0
               ? 'text-slate-400 cursor-not-allowed'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
-          <Eye className="w-4 h-4" />
-          2. Review & Edit
+          <Eye className="w-5 h-5" />
+          Review & Edit
         </button>
         <button
           onClick={() => setActiveTab('export')}
           disabled={epics.length === 0}
-          className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+          className={`px-6 py-3 font-semibold transition-all flex items-center gap-2 rounded-lg ${
             activeTab === 'export'
-              ? 'border-b-2 border-blue-600 text-blue-600'
+              ? 'bg-white text-blue-600 shadow-md border border-blue-200'
               : epics.length === 0
               ? 'text-slate-400 cursor-not-allowed'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
-          <Send className="w-4 h-4" />
-          3. Export
+          <Send className="w-5 h-5" />
+          Export
         </button>
       </div>
 
@@ -334,31 +334,43 @@ export function EpicStoryExtraction() {
           </div>
 
           {/* Supported File Types */}
-          <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
-            <h4 className="font-semibold text-slate-900 mb-3">Supported File Types</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-start gap-3">
-                <Image className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-slate-900">Process Diagrams</p>
-                  <p className="text-sm text-slate-600">.png, .jpg, .jpeg, .gif, .webp</p>
-                  <p className="text-xs text-slate-500 mt-1">Uses Vision AI to extract flows</p>
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-8 border border-slate-200 shadow-sm">
+            <h4 className="font-bold text-slate-900 mb-5 text-lg">Supported File Types</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="bg-white rounded-lg p-5 border border-slate-200 hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Image className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">Process Diagrams</p>
+                    <p className="text-sm text-slate-600 mt-1">.png, .jpg, .jpeg, .gif, .webp</p>
+                    <p className="text-xs text-slate-500 mt-2 bg-blue-50 p-2 rounded">Uses Vision AI to extract flows</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <FileCode className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-slate-900">ARIS Exports</p>
-                  <p className="text-sm text-slate-600">.xml, .aml</p>
-                  <p className="text-xs text-slate-500 mt-1">Parses hierarchical process models</p>
+              <div className="bg-white rounded-lg p-5 border border-slate-200 hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <FileCode className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">ARIS Exports</p>
+                    <p className="text-sm text-slate-600 mt-1">.xml, .aml</p>
+                    <p className="text-xs text-slate-500 mt-2 bg-green-50 p-2 rounded">Parses hierarchical process models</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <FileText className="w-5 h-5 text-purple-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-slate-900">Documentation</p>
-                  <p className="text-sm text-slate-600">.md, .txt</p>
-                  <p className="text-xs text-slate-500 mt-1">Extracts structured user stories</p>
+              <div className="bg-white rounded-lg p-5 border border-slate-200 hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">Documentation</p>
+                    <p className="text-sm text-slate-600 mt-1">.md, .txt</p>
+                    <p className="text-xs text-slate-500 mt-2 bg-purple-50 p-2 rounded">Extracts structured user stories</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -386,88 +398,92 @@ export function EpicStoryExtraction() {
             </div>
 
             {/* Epics and Stories */}
-            <div className="space-y-6">
-              {epics.map((epic) => (
-                <div key={epic.id} className="border border-slate-200 rounded-lg overflow-hidden">
+            <div className="space-y-5">
+              {epics.map((epic, epicIndex) => (
+                <div key={epic.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
                   {/* Epic Header */}
-                  <div className="bg-blue-50 p-4 border-b border-slate-200">
-                    <div className="flex items-start gap-3">
+                  <div className="bg-gradient-to-r from-slate-100 to-slate-200 p-6 border-b border-slate-300">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <label className="text-xs font-medium text-slate-600 mb-1 block">EPIC TITLE</label>
+                        <div className="inline-block px-3 py-1 bg-slate-300 rounded-full text-xs font-bold uppercase tracking-wider mb-3 text-slate-700">Epic #{epicIndex + 1}</div>
                         <input
                           type="text"
                           value={epic.title}
                           onChange={(e) => handleEditEpic(epic.id, 'title', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-slate-900"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 font-bold text-lg mb-3 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                         />
-                        <label className="text-xs font-medium text-slate-600 mt-3 mb-1 block">DESCRIPTION</label>
                         <textarea
                           value={epic.description}
                           onChange={(e) => handleEditEpic(epic.id, 'description', e.target.value)}
                           rows={2}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                         />
                       </div>
-                      <Edit2 className="w-4 h-4 text-slate-400 flex-shrink-0 mt-6" />
+                      <Edit2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
                     </div>
                   </div>
 
-                  {/* Stories */}
-                  <div className="divide-y divide-slate-200">
-                    {epic.stories.map((story) => (
-                      <div key={story.id} className="p-4 hover:bg-slate-50 transition-colors">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-xs font-medium text-slate-600 mb-1 block">USER STORY</label>
+                  {/* Stories Grid */}
+                  <div className="p-5 space-y-4">
+                    {epic.stories.map((story, storyIndex) => (
+                      <div key={story.id} className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-5 hover:border-slate-300 transition-colors">
+                        <div className="flex items-start gap-3 mb-4">
+                          <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-slate-400 text-white rounded-lg font-bold text-sm">
+                            {storyIndex + 1}
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">User Story</label>
                             <input
                               type="text"
                               value={story.title}
                               onChange={(e) => handleEditStory(epic.id, story.id, 'title', e.target.value)}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-slate-900"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-slate-900"
                             />
                           </div>
-                          
-                          <div>
-                            <label className="text-xs font-medium text-slate-600 mb-1 block">DESCRIPTION</label>
-                            <textarea
-                              value={story.description}
-                              onChange={(e) => handleEditStory(epic.id, story.id, 'description', e.target.value)}
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
-                            />
-                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">Description</label>
+                          <textarea
+                            value={story.description}
+                            onChange={(e) => handleEditStory(epic.id, story.id, 'description', e.target.value)}
+                            rows={2}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                          />
+                        </div>
 
-                          {/* Acceptance Criteria */}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <label className="text-xs font-medium text-slate-600">ACCEPTANCE CRITERIA</label>
-                              <button
-                                onClick={() => handleAddAC(epic.id, story.id)}
-                                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                              >
-                                <Plus className="w-3 h-3" />
-                                Add Criterion
-                              </button>
-                            </div>
-                            <div className="space-y-2">
-                              {story.acceptanceCriteria.map((ac, idx) => (
-                                <div key={idx} className="flex items-start gap-2">
-                                  <span className="text-slate-400 text-sm mt-2">•</span>
-                                  <input
-                                    type="text"
-                                    value={ac}
-                                    onChange={(e) => handleEditAC(epic.id, story.id, idx, e.target.value)}
-                                    className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  />
-                                  <button
-                                    onClick={() => handleRemoveAC(epic.id, story.id, idx)}
-                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                        {/* Acceptance Criteria */}
+                        <div className="bg-white rounded-lg p-4 border border-slate-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Acceptance Criteria</label>
+                            <button
+                              onClick={() => handleAddAC(epic.id, story.id)}
+                              className="px-3 py-1.5 text-xs font-semibold text-white bg-slate-600 hover:bg-slate-700 rounded-lg flex items-center gap-1 transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {story.acceptanceCriteria.map((ac, idx) => (
+                              <div key={idx} className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-slate-200 text-slate-700 rounded text-xs font-bold">
+                                  {idx + 1}
                                 </div>
-                              ))}
-                            </div>
+                                <input
+                                  type="text"
+                                  value={ac}
+                                  onChange={(e) => handleEditAC(epic.id, story.id, idx, e.target.value)}
+                                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <button
+                                  onClick={() => handleRemoveAC(epic.id, story.id, idx)}
+                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -558,17 +574,17 @@ export function EpicStoryExtraction() {
                 <button
                   onClick={handleExport}
                   disabled={isExporting || epics.length === 0 || (integrationConfig.defaultPlatform === 'jira' && !projectKey.trim())}
-                  className="w-full mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+                  className="w-full mt-6 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   {isExporting ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Exporting...
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <span>Exporting...</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="w-5 h-5" />
-                      Push to {integrationConfig.defaultPlatform === 'jira' ? 'Jira' : 'ServiceNow'}
+                      <Upload className="w-6 h-6" />
+                      <span>Push to {integrationConfig.defaultPlatform === 'jira' ? 'Jira' : 'ServiceNow'}</span>
                     </>
                   )}
                 </button>
@@ -585,40 +601,38 @@ export function EpicStoryExtraction() {
               )}
 
               {exportError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-red-800">
-                    <XCircle className="w-5 h-5" />
-                    <span className="font-medium">{exportError}</span>
+                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-5">
+                  <div className="flex items-center gap-3 text-red-800 font-semibold">
+                    <XCircle className="w-6 h-6 flex-shrink-0" />
+                    <span>{exportError}</span>
                   </div>
                 </div>
               )}
 
               {exportResult && exportResult.created.length > 0 && (
-                <div className="bg-white rounded-lg border border-slate-200 p-6">
-                  <h4 className="font-semibold mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="bg-white rounded-xl border border-green-200 p-6 shadow-sm">
+                  <h4 className="font-bold mb-5 flex items-center gap-2 text-green-600 text-lg">
+                    <CheckCircle className="w-6 h-6" />
                     Successfully Created ({exportResult.created.length})
                   </h4>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {exportResult.created.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{item.type === 'epic' ? '📦' : '📝'}</span>
-                          <div>
-                            <div className="font-medium text-slate-900">{item.title}</div>
-                            <div className="text-sm text-slate-600">{item.remoteId}</div>
-                          </div>
+                      <div key={index} className="flex items-start gap-4 p-4 bg-green-50 rounded-lg border border-green-200 hover:shadow-md transition-shadow">
+                        <div className="text-3xl flex-shrink-0">{item.type === 'epic' ? '📦' : '📝'}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-slate-900 truncate">{item.title}</div>
+                          <div className="text-sm text-slate-600 font-mono mt-1">{item.remoteId}</div>
+                          {item.url && (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-semibold text-sm mt-2"
+                            >
+                              View →
+                            </a>
+                          )}
                         </div>
-                        {item.url && (
-                          <a
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm font-medium"
-                          >
-                            View →
-                          </a>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -626,16 +640,16 @@ export function EpicStoryExtraction() {
               )}
 
               {exportResult && exportResult.failed.length > 0 && (
-                <div className="bg-white rounded-lg border border-red-200 p-6">
-                  <h4 className="font-semibold mb-4 flex items-center gap-2 text-red-600">
-                    <XCircle className="w-5 h-5" />
+                <div className="bg-white rounded-xl border border-red-200 p-6 shadow-sm">
+                  <h4 className="font-bold mb-5 flex items-center gap-2 text-red-600 text-lg">
+                    <XCircle className="w-6 h-6" />
                     Failed Items ({exportResult.failed.length})
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {exportResult.failed.map((item, index) => (
-                      <div key={index} className="p-3 bg-red-50 rounded-lg">
-                        <div className="font-medium text-red-900">{item.title}</div>
-                        <div className="text-sm text-red-700 mt-1">{item.error}</div>
+                      <div key={index} className="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <div className="font-bold text-red-900">{item.title}</div>
+                        <div className="text-sm text-red-700 mt-2 font-mono">{item.error}</div>
                       </div>
                     ))}
                   </div>
