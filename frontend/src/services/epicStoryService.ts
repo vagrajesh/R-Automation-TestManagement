@@ -39,6 +39,17 @@ export interface UploadResponse {
     type: string;
     mimeType: string;
   };
+  piiDetection?: {
+    hasPII: boolean;
+    severity: 'none' | 'low' | 'medium' | 'high';
+    detections: Array<{
+      type: string;
+      value: string;
+      severity: 'low' | 'medium' | 'high';
+    }>;
+    maskedText: string;
+    summary: string;
+  };
 }
 
 export interface ExportCredentials {

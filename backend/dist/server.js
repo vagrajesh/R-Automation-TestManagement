@@ -1658,6 +1658,99 @@ function extractDescription(desc) {
     }
     return '';
 }
+// ==================== PII DETECTION ENDPOINTS ====================
+/**
+ * Import PII detector
+ */
+import { piiDetector } from './lib/piiDetector.js';
+/**
+ * GET /api/pii/config
+ * Retrieve current PII detection configuration
+ */
+app.get('/api/pii/config', (req, res) => {
+    try {
+        const config = req.session?.piiConfig;
+        if (!config) {
+            // Return default config instead of 404
+            const defaultConfig = {
+                mode: 'warn',
+                sensitivityLevel: 'medium',
+                enabledTypes: ['email', 'phone', 'ssn', 'creditCard', 'bankAccount', 'passport', 'dob', 'driverLicense', 'ipAddress'],
+                autoSave: true,
+            };
+            return res.status(200).json(defaultConfig);
+        }
+        return res.json(config);
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return res.status(500).json({ error: `Failed to retrieve PII config: ${errorMessage}` });
+    }
+});
+/**
+ * POST /api/pii/config
+ * Save PII detection configuration to session
+ */
+app.post('/api/pii/config', (req, res) => {
+    try {
+        const { mode, sensitivityLevel, enabledTypes, autoSave } = req.body;
+        if (!mode || !sensitivityLevel) {
+            return res.status(400).json({ error: 'Mode and sensitivity level are required' });
+        }
+        const validModes = ['disabled', 'warn', 'mask', 'block'];
+        const validLevels = ['low', 'medium', 'high'];
+        if (!validModes.includes(mode)) {
+            return res.status(400).json({ error: `Invalid mode. Must be one of: ${validModes.join(', ')}` });
+        }
+        if (!validLevels.includes(sensitivityLevel)) {
+            return res.status(400).json({ error: `Invalid sensitivity level. Must be one of: ${validLevels.join(', ')}` });
+        }
+        const config = {
+            mode,
+            sensitivityLevel,
+            enabledTypes: enabledTypes || [],
+            autoSave: autoSave !== false,
+        };
+        // Store in session
+        if (!req.session) {
+            return res.status(500).json({ error: 'Session not available' });
+        }
+        req.session.piiConfig = config;
+        console.log('[PII CONFIG SAVED] Mode:', mode, 'Sensitivity:', sensitivityLevel, 'Enabled Types:', enabledTypes?.length || 0);
+        return res.json({ success: true, config });
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return res.status(500).json({ error: `Failed to save PII config: ${errorMessage}` });
+    }
+});
+/**
+ * POST /api/pii/detect
+ * Detect PII in provided content
+ */
+app.post('/api/pii/detect', (req, res) => {
+    try {
+        const { content, config } = req.body;
+        if (!content || typeof content !== 'string') {
+            return res.status(400).json({ error: 'Content (string) is required' });
+        }
+        // Use provided config or fall back to session config
+        const piiConfig = config || req.session?.piiConfig || {
+            mode: 'warn',
+            sensitivityLevel: 'medium',
+            enabledTypes: ['email', 'phone', 'ssn', 'creditCard', 'bankAccount', 'passport', 'dob', 'driverLicense', 'ipAddress'],
+            autoSave: true,
+        };
+        // Detect PII
+        const result = piiDetector.detectPII(content, piiConfig.sensitivityLevel, piiConfig.enabledTypes);
+        return res.json(result);
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return res.status(500).json({ error: `PII detection failed: ${errorMessage}` });
+    }
+});
+// ==================== END PII DETECTION ENDPOINTS ====================
 // Global error handler middleware
 app.use((err, _req, res, _next) => {
     const status = err.status || 500;

@@ -15,4 +15,24 @@ declare global {
         }
     }
 }
+/**
+ * PII Configuration type for session storage
+ */
+interface PIIConfig {
+    mode: 'disabled' | 'warn' | 'mask' | 'block';
+    sensitivityLevel: 'low' | 'medium' | 'high';
+    enabledTypes: string[];
+    autoSave: boolean;
+}
+/**
+ * Extend Express session to include PII config
+ */
+declare global {
+    namespace Express {
+        interface Session {
+            piiConfig?: PIIConfig;
+        }
+    }
+}
+export {};
 //# sourceMappingURL=server.d.ts.map

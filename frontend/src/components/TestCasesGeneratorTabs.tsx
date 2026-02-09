@@ -181,12 +181,61 @@ export function TestCasesGeneratorTabs() {
 
     try {
       const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+      
+      // Step 1: Check for PII in story content
+      const contentToCheck = [
+        selectedStory.title || '',
+        selectedStory.description || '',
+        selectedStory.acceptanceCriteria || ''
+      ].join('\n');
+
+      const piiResponse = await fetch(`${apiBaseUrl}/api/pii/detect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: contentToCheck }),
+      });
+
+      if (!piiResponse.ok) {
+        throw new Error('Failed to check for PII');
+      }
+
+      const piiResult = await piiResponse.json();
+
+      // Get PII config to check mode
+      const configResponse = await fetch(`${apiBaseUrl}/api/pii/config`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const piiConfig = configResponse.ok ? await configResponse.json() : { mode: 'warn' };
+
+      // Handle PII based on mode
+      if (piiResult.hasPII && piiConfig.mode === 'block') {
+        const detectionTypes = piiResult.detections?.map((d: any) => d.type).join(', ') || 'unknown';
+        throw new Error(
+          `PII detected in story content. Test case generation blocked.\n\nDetection Summary: ${piiResult.summary}\nSeverity: ${piiResult.severity}\nTypes found: ${detectionTypes}\n\nPlease remove PII from the story or change PII settings to MASK or WARN mode.`
+        );
+      }
+
+      // Handle MASK mode - use masked content
+      let storyToSend = selectedStory;
+      if (piiResult.hasPII && piiConfig.mode === 'mask') {
+        const maskedLines = piiResult.maskedText.split('\n');
+        storyToSend = {
+          ...selectedStory,
+          title: maskedLines[0] || selectedStory.title,
+          description: maskedLines[1] || selectedStory.description,
+          acceptanceCriteria: maskedLines[2] || selectedStory.acceptanceCriteria,
+        };
+      }
+
+      // Step 2: Generate test cases
       const response = await fetch(`${apiBaseUrl}/api/test-cases/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          story: selectedStory,
+          story: storyToSend,
           numTestCases,
           provider,
           model: selectedModel,
@@ -245,12 +294,61 @@ export function TestCasesGeneratorTabs() {
 
     try {
       const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+      
+      // Step 1: Check for PII in story content
+      const contentToCheck = [
+        selectedStory.title || '',
+        selectedStory.description || '',
+        selectedStory.acceptanceCriteria || ''
+      ].join('\n');
+
+      const piiResponse = await fetch(`${apiBaseUrl}/api/pii/detect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: contentToCheck }),
+      });
+
+      if (!piiResponse.ok) {
+        throw new Error('Failed to check for PII');
+      }
+
+      const piiResult = await piiResponse.json();
+
+      // Get PII config to check mode
+      const configResponse = await fetch(`${apiBaseUrl}/api/pii/config`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const piiConfig = configResponse.ok ? await configResponse.json() : { mode: 'warn' };
+
+      // Handle PII based on mode
+      if (piiResult.hasPII && piiConfig.mode === 'block') {
+        const detectionTypes = piiResult.detections?.map((d: any) => d.type).join(', ') || 'unknown';
+        throw new Error(
+          `PII detected in story content. Test case generation blocked.\n\nDetection Summary: ${piiResult.summary}\nSeverity: ${piiResult.severity}\nTypes found: ${detectionTypes}\n\nPlease remove PII from the story or change PII settings to MASK or WARN mode.`
+        );
+      }
+
+      // Handle MASK mode - use masked content
+      let storyToSend = selectedStory;
+      if (piiResult.hasPII && piiConfig.mode === 'mask') {
+        const maskedLines = piiResult.maskedText.split('\n');
+        storyToSend = {
+          ...selectedStory,
+          title: maskedLines[0] || selectedStory.title,
+          description: maskedLines[1] || selectedStory.description,
+          acceptanceCriteria: maskedLines[2] || selectedStory.acceptanceCriteria,
+        };
+      }
+
+      // Step 2: Generate test cases with evaluation
       const response = await fetch(`${apiBaseUrl}/api/test-cases/generate-with-eval`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          story: selectedStory,
+          story: storyToSend,
           numTestCases,
           provider,
           model: selectedModel,

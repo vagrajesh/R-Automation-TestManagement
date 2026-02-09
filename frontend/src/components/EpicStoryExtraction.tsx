@@ -11,6 +11,8 @@ import {
   type ExportResult,
   type IntegrationConfig,
 } from '../services/epicStoryService';
+import { PIIWarningDialog, type PIIDetectionResult } from './PIIWarningDialog';
+import { piiConfigService } from '../services/piiConfigService';
 
 type Tab = 'upload' | 'review' | 'export';
 
@@ -22,6 +24,12 @@ export function EpicStoryExtraction() {
   const [epics, setEpics] = useState<Epic[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // PII Detection state
+  const [showPIIDialog, setShowPIIDialog] = useState(false);
+  const [piiCheckResult, setPiiCheckResult] = useState<PIIDetectionResult | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [piiDialogLoading, setPiiDialogLoading] = useState(false);
   
   // Export state
   const [isExporting, setIsExporting] = useState(false);
@@ -55,13 +63,62 @@ export function EpicStoryExtraction() {
 
     try {
       const result = await uploadFile(file);
+      
+      // Check if PII was detected during upload
+      if (result.piiDetection) {
+        const piiConfig = await piiConfigService.getConfig();
+        
+        if (piiConfig.mode === 'warn') {
+          // Show dialog for user decision
+          setPiiCheckResult(result.piiDetection);
+          setPendingFile(file);
+          setShowPIIDialog(true);
+          setIsUploading(false);
+          return;
+        }
+      }
+
+      // Process normally if no PII or mode is not 'warn'
       setProcessingResult(result.data);
       setEpics(result.data.epics);
       setActiveTab('review');
     } catch (error: any) {
-      setUploadError(error.response?.data?.error || error.message || 'Upload failed');
+      if (error.response?.data?.piiBlocked) {
+        setUploadError(`PII Detection: ${error.response.data.error}`);
+      } else {
+        setUploadError(error.response?.data?.error || error.message || 'Upload failed');
+      }
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handlePIIDialogAction = async (action: 'block' | 'mask' | 'continue') => {
+    setPiiDialogLoading(true);
+
+    try {
+      if (action === 'block') {
+        setUploadError('Upload blocked due to PII detection');
+        setShowPIIDialog(false);
+        setPiiCheckResult(null);
+        setPendingFile(null);
+        return;
+      }
+
+      if (pendingFile) {
+        const result = await uploadFile(pendingFile);
+        setProcessingResult(result.data);
+        setEpics(result.data.epics);
+        setActiveTab('review');
+      }
+
+      setShowPIIDialog(false);
+      setPiiCheckResult(null);
+      setPendingFile(null);
+    } catch (error: any) {
+      setUploadError(error.response?.data?.error || error.message || 'Upload failed');
+    } finally {
+      setPiiDialogLoading(false);
     }
   };
 
@@ -202,6 +259,16 @@ export function EpicStoryExtraction() {
 
   return (
     <div className="space-y-6">
+      {/* PII Warning Dialog */}
+      <PIIWarningDialog
+        isOpen={showPIIDialog}
+        piiResult={piiCheckResult}
+        fileName={selectedFile?.name}
+        onBlock={() => handlePIIDialogAction('block')}
+        onMask={() => handlePIIDialogAction('mask')}
+        onContinue={() => handlePIIDialogAction('continue')}
+        isLoading={piiDialogLoading}
+      />
       {/* Tabs - Modern Card Style */}
       <div className="flex gap-3 bg-gradient-to-r from-slate-50 to-slate-100 p-1 rounded-xl border border-slate-200">
         <button

@@ -106,6 +106,60 @@ export function RequirementAnalysis() {
       setSuccess(null);
       setAnalysisResult(null);
 
+      const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+      
+      // Step 1: Check for PII in story content
+      const contentToCheck = [
+        selectedStory.title || '',
+        selectedStory.description || '',
+        selectedStory.acceptanceCriteria || ''
+      ].join('\n');
+
+      const piiResponse = await fetch(`${apiBaseUrl}/api/pii/detect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: contentToCheck }),
+      });
+
+      if (!piiResponse.ok) {
+        throw new Error('Failed to check for PII');
+      }
+
+      const piiResult = await piiResponse.json();
+
+      // Get PII config to check mode
+      const configResponse = await fetch(`${apiBaseUrl}/api/pii/config`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const piiConfig = configResponse.ok ? await configResponse.json() : { mode: 'warn' };
+
+      // Handle PII based on mode
+      if (piiResult.hasPII && piiConfig.mode === 'block') {
+        const detectionTypes = piiResult.detections?.map((d: any) => d.type).join(', ') || 'unknown';
+        throw new Error(
+          `PII detected in story content. User story analysis blocked.\n\nDetection Summary: ${piiResult.summary}\nSeverity: ${piiResult.severity}\nTypes found: ${detectionTypes}\n\nPlease remove PII from the story or change PII settings to MASK or WARN mode.`
+        );
+      }
+
+      // Handle MASK mode - use masked content
+      let storyToAnalyze = selectedStory;
+      if (piiResult.hasPII && piiConfig.mode === 'mask') {
+        const maskedLines = piiResult.maskedText.split('\n');
+        storyToAnalyze = {
+          ...selectedStory,
+          title: maskedLines[0] || selectedStory.title,
+          description: maskedLines[1] || selectedStory.description,
+          acceptanceCriteria: maskedLines[2] || selectedStory.acceptanceCriteria,
+        };
+      }
+
+      // Handle WARN mode - show warning but continue
+      if (piiResult.hasPII && piiConfig.mode === 'warn') {
+        console.warn('[PII] Warning: PII detected in story content:', piiResult.summary);
+      }
+
       const { llmService } = await import('../services/llmService');
       const configuredProviders = llmService.getConfiguredProviders();
       console.log('[User Story Analysis] Configured providers:', configuredProviders);
@@ -126,7 +180,7 @@ export function RequirementAnalysis() {
         return;
       }
 
-      // Call backend API instead of direct LLM
+      // Step 2: Call backend API for analysis
       console.log('[User Story Analysis] Calling /api/user-story/analyze');
       const response = await fetch(`${API_BASE_URL}/api/user-story/analyze`, {
         method: 'POST',
@@ -135,7 +189,7 @@ export function RequirementAnalysis() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          story: selectedStory,
+          story: storyToAnalyze,
           provider,
           model: config.model,
         }),

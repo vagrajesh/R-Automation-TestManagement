@@ -12,6 +12,7 @@ import {
   Home,
   Moon,
   Sun,
+  Shield,
 } from 'lucide-react';
 import { RequirementAnalysis } from './components/RequirementAnalysis';
 import { Settings } from './components/Settings';
@@ -22,6 +23,8 @@ import { VisualTesting } from './components/VisualTesting';
 import { TestPlan } from './components/TestPlan';
 import { StatusBadge } from './components/StatusBadge';
 import { EpicStoryExtraction } from './components/EpicStoryExtraction';
+import { piiConfigService } from './services/piiConfigService';
+import { PIIConfig } from './config/piiConfig';
 
 // Get API base URL from environment, defaults to localhost:8080
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -140,6 +143,7 @@ function App() {
     isConnected: false,
     isLoading: false,
   });
+  const [piiConfig, setPiiConfig] = useState<PIIConfig | null>(null);
 
   // Fetch backend configuration on app startup (single source of truth)
   useEffect(() => {
@@ -275,8 +279,22 @@ function App() {
 
     checkStatuses();
     
+    // Load PII config
+    const loadPiiConfig = async () => {
+      try {
+        const config = await piiConfigService.getConfig();
+        setPiiConfig(config);
+      } catch (error) {
+        console.warn('Failed to load PII config:', error);
+      }
+    };
+    loadPiiConfig();
+    
     // Recheck when returning to app (every 30 seconds)
-    const interval = setInterval(checkStatuses, 30000);
+    const interval = setInterval(() => {
+      checkStatuses();
+      loadPiiConfig();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -385,6 +403,34 @@ function App() {
                   isConnected={integrationStatus.isConnected}
                   isLoading={integrationStatus.isLoading}
                 />
+              )}
+              {/* PII Detection Status */}
+              {piiConfig && (
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-600" />
+                  <div className="flex items-center gap-1 text-xs">
+                    <span className={`px-2 py-1 rounded-md font-medium ${
+                      piiConfig.mode === 'block' 
+                        ? 'bg-red-100 text-red-800 border-red-200' 
+                        : piiConfig.mode === 'mask'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : piiConfig.mode === 'warn'
+                        ? 'bg-orange-100 text-orange-800 border-orange-200'
+                        : 'bg-gray-100 text-gray-800 border-gray-200'
+                    } border`}>
+                      {piiConfig.mode.toUpperCase()}
+                    </span>
+                    <span className={`px-2 py-1 rounded-md font-medium ${
+                      piiConfig.sensitivityLevel === 'high'
+                        ? 'bg-red-100 text-red-800 border-red-200'
+                        : piiConfig.sensitivityLevel === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : 'bg-green-100 text-green-800 border-green-200'
+                    } border`}>
+                      {piiConfig.sensitivityLevel.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
               )}
               {!llmStatus.provider && (!defaultIntegration || !integrationStatus.isConnected) && (
                 <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>No integrations configured</div>

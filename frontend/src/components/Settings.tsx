@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Figma, Settings2, ExternalLink, Loader, CheckCircle } from 'lucide-react';
 import { LLMSettings } from './LLMSettings';
+import { PIISettings } from './PIISettings';
 import { connectJira, connectServiceNow } from '../services/integrationService';
 import { getIntegrationConfigFromEnv } from '../config/integrationConfig';
 
@@ -23,7 +24,7 @@ interface Integration {
 }
 
 export function Settings() {
-  const [selectedTab, setSelectedTab] = useState<'llm' | 'other'>('llm');
+  const [selectedTab, setSelectedTab] = useState<'llm' | 'other' | 'pii'>('llm');
 
   const [integrations, setIntegrations] = useState<Integration[]>([
     {
@@ -279,6 +280,12 @@ export function Settings() {
             LLM Integration
           </button>
           <button
+            onClick={() => setSelectedTab('pii')}
+            className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
+          >
+            PII Detection
+          </button>
+          <button
             onClick={() => setSelectedTab('other')}
             className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
           >
@@ -286,6 +293,34 @@ export function Settings() {
           </button>
         </div>
         <LLMSettings />
+      </div>
+    );
+  }
+
+  if (selectedTab === 'pii') {
+    return (
+      <div className="space-y-6">
+        <div className="flex gap-2 border-b border-slate-200">
+          <button
+            onClick={() => setSelectedTab('llm')}
+            className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
+          >
+            LLM Integration
+          </button>
+          <button
+            onClick={() => setSelectedTab('pii')}
+            className="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600"
+          >
+            PII Detection
+          </button>
+          <button
+            onClick={() => setSelectedTab('other')}
+            className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
+          >
+            Other Integrations
+          </button>
+        </div>
+        <PIISettings />
       </div>
     );
   }
@@ -298,6 +333,12 @@ export function Settings() {
           className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
         >
           LLM Integration
+        </button>
+        <button
+          onClick={() => setSelectedTab('pii')}
+          className="px-4 py-2 font-semibold text-slate-600 hover:text-slate-900"
+        >
+          PII Detection
         </button>
         <button
           onClick={() => setSelectedTab('other')}

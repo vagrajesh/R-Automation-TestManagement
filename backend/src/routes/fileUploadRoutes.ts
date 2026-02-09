@@ -5,6 +5,7 @@ import { arisParser } from '../lib/arisParser.js';
 import { markdownParser } from '../lib/markdownParser.js';
 import { exportEngine } from '../lib/exportEngine.js';
 import { connectionManager } from '../services/connectionManager.js';
+import { piiDetector } from '../lib/piiDetector.js';
 
 const router = express.Router();
 
@@ -86,6 +87,43 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
         });
     }
 
+    // Perform PII detection on extracted content
+    const piiConfig = (req.session as any)?.piiConfig;
+    let piiDetection: any = null;
+
+    if (piiConfig && piiConfig.mode !== 'disabled') {
+      // Check all extracted text content for PII
+      const contentToCheck = JSON.stringify(result);
+      piiDetection = piiDetector.detectPII(
+        contentToCheck,
+        piiConfig.sensitivityLevel,
+        piiConfig.enabledTypes
+      );
+
+      // If PII found and mode is 'block', return error
+      if (piiDetection.hasPII && piiConfig.mode === 'block') {
+        console.warn(`[PII] Blocked file upload due to PII detection: ${fileName}`);
+        return res.status(400).json({
+          success: false,
+          piiBlocked: true,
+          error: `File contains sensitive information and cannot be processed (mode: block)`,
+          piiDetection: {
+            hasPII: piiDetection.hasPII,
+            severity: piiDetection.severity,
+            summary: piiDetection.summary,
+            detections: piiDetection.detections.slice(0, 10), // Limit to first 10
+          },
+        });
+      }
+
+      // If mask mode, use masked version
+      if (piiDetection.hasPII && piiConfig.mode === 'mask') {
+        console.log(`[PII] Masking detected PII in file: ${fileName}`);
+        // Reparse result with masked content if needed
+        // For now, include PII info in response for frontend to handle
+      }
+    }
+
     return res.json({
       success: true,
       data: result,
@@ -95,6 +133,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
         type: fileType,
         mimeType: file.mimetype,
       },
+      ...(piiDetection && { piiDetection }),
     });
   } catch (error: any) {
     console.error('File upload processing error:', error);
